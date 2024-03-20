@@ -19,7 +19,7 @@ const collectionName = process.env.COLLECTION_NAME;
     const server = new opcua.OPCUAServer({
         port: 4840,
         resourcePath: "/UA/MyLittleServer",
-        maxConnection: 20,
+        maxConnections: 20,
     });
 
     await server.initialize();
