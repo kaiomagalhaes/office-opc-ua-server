@@ -1,10 +1,11 @@
+require('dotenv').config();
+
 const opcua = require("node-opcua");
 const { MongoClient } = require("mongodb");
 
-// MongoDB configuration with your provided URI
-const mongoUrl = "mongodb+srv://codelitt:s9aL2sJnZLFIRi2t@cluster0.acj1ec4.mongodb.net/storyforge?retryWrites=true&w=majority";
-const dbName = "officedata"; // Database name, adjusted to match your URI
-const collectionName = "lux"; // Collection name for storing lux values
+const mongoUrl = process.env.MONGO_URL;
+const dbName = process.env.DB_NAME;
+const collectionName = process.env.COLLECTION_NAME;
 
 (async () => {
     // Initialize MongoDB client and connect
@@ -18,7 +19,7 @@ const collectionName = "lux"; // Collection name for storing lux values
     const server = new opcua.OPCUAServer({
         port: 4840,
         resourcePath: "/UA/MyLittleServer",
-	maxConnection: 20,
+        maxConnection: 20,
     });
 
     await server.initialize();
@@ -29,7 +30,7 @@ const collectionName = "lux"; // Collection name for storing lux values
     // Add a new object to the server
     const device = namespace.addObject({
         organizedBy: addressSpace.rootFolder.objects,
-        browseName: "MyDevice",
+        browseName: "Arduino",
     });
 
     // Add a variable that represents the LuxValue
@@ -43,9 +44,9 @@ const collectionName = "lux"; // Collection name for storing lux values
             set: async (variant) => {
                 const luxValue = variant.value;
                 try {
-                   // Insert or update the lux value in MongoDB
+                    // Insert or update the lux value in MongoDB
                     await collection.updateOne(
-                        { nodeId: "ns=1;s=the.node.identifier" }, // Unique identifier for the document
+                        { nodeId: "ns=1;s=the.node.identifier" },
                         { $set: { luxValue: luxValue, timestamp: new Date() } },
                         { upsert: true }
                     );
@@ -63,7 +64,6 @@ const collectionName = "lux"; // Collection name for storing lux values
     await server.start();
     console.log(`Server is now listening on port ${server.endpoints[0].port}...`);
 
-    // Ensure MongoDB connection is closed when the OPC UA server shuts down
     process.on('SIGINT', async () => {
         await client.close();
         console.log("Disconnected from MongoDB.");
