@@ -44,15 +44,12 @@ const collectionName = process.env.COLLECTION_NAME;
             set: async (variant) => {
                 const luxValue = variant.value;
                 try {
-                    // Insert or update the lux value in MongoDB
-                    await collection.updateOne(
-                        { nodeId: "ns=1;s=the.node.identifier" },
-                        { $set: { luxValue: luxValue, timestamp: new Date() } },
-                        { upsert: true }
-                    );
-                    console.log("Lux value updated in MongoDB.");
-
-
+                    await collection.insertOne({
+                        nodeId: "ns=1;s=the.node.identifier",
+                        luxValue: luxValue,
+                        timestamp: new Date()
+                    });
+                    console.log("New Lux value inserted into MongoDB.");
                 } catch (error) {
                     console.error("Error updating MongoDB:", error);
                 }
